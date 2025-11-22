@@ -1,3 +1,4 @@
+// pages/_app.js
 import '../styles/globals.css'
 import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
@@ -20,11 +21,13 @@ function MyApp({ Component, pageProps }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors">
+    <div className="site-bg min-h-screen flex flex-col text-gray-800 dark:text-gray-100 transition-colors">
       <Navbar theme={theme} toggleTheme={toggleTheme} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Component {...pageProps} />
       </main>
+
       <Footer />
     </div>
   )

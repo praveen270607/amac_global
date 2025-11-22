@@ -311,9 +311,9 @@ export default function Navbar({ theme, toggleTheme }) {
                   height={35}
                 />
                 <div className="hidden sm:block">
-                  <div className="text-sm font-semibold">AMAC Global</div>
+                  <div className="text-sm font-semibold">AMAC GLOBAL</div>
                   <div className="text-xs text-gray-600 dark:text-gray-300">
-                    Excellence in Management Consultancy
+                    Management Consultancy
                   </div>
                 </div>
               </Link>

@@ -14,9 +14,38 @@ html {
 
 /* subtle glass card */
 .glass {
-  background: rgba(255,255,255,0.6);
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(6px);
 }
 .dark .glass {
-  background: rgba(17,24,39,0.6);
+  background: rgba(17, 24, 39, 0.6);
+}
+
+/* Global site background: consultant theme image with softer overlay */
+.site-bg {
+  /* light mode: lighter overlay so the image is more visible */
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.75),
+      rgba(255, 255, 255, 0.85)
+    ),
+    url('/A_photograph_captures_a_modern_office_environment_.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* dark mode: slightly lighter overlay so image is still visible */
+.dark .site-bg {
+  background-image:
+    linear-gradient(
+      to bottom,
+      rgba(15, 23, 42, 0.78),  /* slate-900-ish with some transparency */
+      rgba(15, 23, 42, 0.88)
+    ),
+    url('/A_photograph_captures_a_modern_office_environment_.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
