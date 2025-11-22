@@ -4,6 +4,9 @@ import Image from 'next/image'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 
+// Password for Consultant Access
+const CONSULTANT_PASSWORD = "AMAC2025"   // <<< CHANGE THIS PASSWORD WHEN NEEDED
+
 // Option B: compact list of key countries with flags + codes
 const PHONE_COUNTRIES = [
   { code: '+971', flag: '🇦🇪', label: 'UAE' },
@@ -18,6 +21,79 @@ const PHONE_COUNTRIES = [
   { code: '+1', flag: '🇨🇦', label: 'Canada' },
 ]
 
+/* -----------------------------------------------------------
+   PASSWORD CHECK MODAL
+----------------------------------------------------------- */
+function PasswordModal({ open, onClose, onSuccess }) {
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+
+  if (!open) return null
+
+  function checkPassword(e) {
+    e.preventDefault()
+    if (password === CONSULTANT_PASSWORD) {
+      setError("")
+      onClose()
+      onSuccess()
+    } else {
+      setError("Incorrect password. Try again.")
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onClose}
+      />
+
+      <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-sm p-6 mx-4">
+        <h2 className="text-xl font-semibold mb-2">Consultant Login</h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          Enter password to access Consultant / Agent Details
+        </p>
+
+        <form onSubmit={checkPassword} className="space-y-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+              required
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-600">{error}</p>
+          )}
+
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-brand-500 text-white rounded-md text-sm shadow hover:opacity-90"
+            >
+              Continue
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+/* -----------------------------------------------------------
+   MAIN CONSULTANT / AGENT DETAILS MODAL
+----------------------------------------------------------- */
 function ConsultantModal({ open, onClose }) {
   const [form, setForm] = useState({
     name: '',
@@ -45,11 +121,10 @@ function ConsultantModal({ open, onClose }) {
       (c) => c.code === form.phoneCountryCode
     )
 
-    // For now just log; you can send this to an API later
-    console.log('Consultant / Agent details submitted:', {
+    console.log("Consultant / Agent Details:", {
       ...form,
       fullPhone: `${form.phoneCountryCode} ${form.phone}`,
-      phoneCountryLabel: selectedCountry?.label,
+      countryLabel: selectedCountry?.label,
     })
 
     onClose()
@@ -57,84 +132,55 @@ function ConsultantModal({ open, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* backdrop */}
       <div
         className="absolute inset-0 bg-black/50"
         onClick={onClose}
-        aria-hidden="true"
       />
-      {/* dialog */}
-      <div
-        className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-semibold">
-              Consultant / Agent Details
-            </h2>
-            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-              Please fill in your details below.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xl leading-none px-2 py-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
-            aria-label="Close"
-          >
-            ×
-          </button>
-        </div>
+
+      <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-lg p-6 mx-4">
+        <h2 className="text-xl font-semibold mb-2">Consultant / Agent Details</h2>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Name (Consultant)
-            </label>
+            <label className="block text-sm font-medium mb-1">Name (Consultant)</label>
             <input
               name="name"
               value={form.name}
               onChange={handleChange}
-              className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Organization
-            </label>
+            <label className="block text-sm font-medium mb-1">Organization</label>
             <input
               name="organization"
               value={form.organization}
               onChange={handleChange}
-              className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                City / Village
-              </label>
+              <label className="block text-sm font-medium mb-1">City / Village</label>
               <input
                 name="city"
                 value={form.city}
                 onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium mb-1">
-                District
-              </label>
+              <label className="block text-sm font-medium mb-1">District</label>
               <input
                 name="district"
                 value={form.district}
                 onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
               />
             </div>
           </div>
@@ -146,37 +192,33 @@ function ConsultantModal({ open, onClose }) {
                 name="state"
                 value={form.state}
                 onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-1">Country</label>
               <input
                 name="country"
                 value={form.country}
                 onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
               />
             </div>
           </div>
 
-          {/* Phone with country code + flag */}
+          {/* Phone with flag + country code */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Contact Phone No
-            </label>
+            <label className="block text-sm font-medium mb-1">Contact Phone No</label>
             <div className="flex items-center gap-2">
               <select
                 name="phoneCountryCode"
                 value={form.phoneCountryCode}
                 onChange={handleChange}
-                className="p-2 border rounded text-sm w-28 shrink-0 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="p-2 w-28 rounded border border-gray-300 dark:border-gray-700"
               >
                 {PHONE_COUNTRIES.map((c) => (
-                  <option
-                    key={`${c.flag}-${c.label}-${c.code}`}
-                    value={c.code}
-                  >
+                  <option key={c.label} value={c.code}>
                     {c.flag} {c.code}
                   </option>
                 ))}
@@ -187,7 +229,7 @@ function ConsultantModal({ open, onClose }) {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder="Phone number"
-                className="flex-1 p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+                className="flex-1 p-2 border rounded border-gray-300 dark:border-gray-700"
               />
             </div>
           </div>
@@ -199,21 +241,22 @@ function ConsultantModal({ open, onClose }) {
               name="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
             />
           </div>
 
-          <div className="mt-4 flex justify-end gap-3">
+          <div className="flex justify-end gap-3 mt-4">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 text-sm"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
             >
               Cancel
             </button>
+
             <button
               type="submit"
-              className="px-4 py-2 rounded-md bg-brand-500 text-white text-sm shadow hover:opacity-90"
+              className="px-4 py-2 bg-brand-500 text-white rounded-md text-sm shadow hover:opacity-90"
             >
               Submit
             </button>
@@ -224,9 +267,14 @@ function ConsultantModal({ open, onClose }) {
   )
 }
 
+/* -----------------------------------------------------------
+   NAVBAR MAIN COMPONENT
+----------------------------------------------------------- */
 export default function Navbar({ theme, toggleTheme }) {
   const [open, setOpen] = useState(false)
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showConsultantModal, setShowConsultantModal] = useState(false)
+
   const router = useRouter()
 
   function handleNavClick(e, href) {
@@ -238,8 +286,9 @@ export default function Navbar({ theme, toggleTheme }) {
     setOpen(false)
   }
 
-  function openConsultantModal() {
-    setShowConsultantModal(true)
+  // When user clicks menu item → open password modal
+  function openProtectedModal() {
+    setShowPasswordModal(true)
     setOpen(false)
   }
 
@@ -248,6 +297,7 @@ export default function Navbar({ theme, toggleTheme }) {
       <nav className="w-full bg-white/60 dark:bg-gray-800/60 backdrop-blur sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
+
             <div className="flex items-center gap-4">
               <Link
                 href="/"
@@ -256,7 +306,7 @@ export default function Navbar({ theme, toggleTheme }) {
               >
                 <Image
                   src="/logo-placeholder.svg"
-                  alt="Kite"
+                  alt="Logo"
                   width={70}
                   height={35}
                 />
@@ -269,44 +319,29 @@ export default function Navbar({ theme, toggleTheme }) {
               </Link>
             </div>
 
-            {/* desktop links */}
+            {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-6">
-              <Link
-                href="/"
-                onClick={(e) => handleNavClick(e, '/')}
-                className="hover:underline"
-              >
+
+              <Link href="/" onClick={(e) => handleNavClick(e, '/')} className="hover:underline">
                 Home
               </Link>
 
-              <Link
-                href="/services"
-                onClick={(e) => handleNavClick(e, '/services')}
-                className="hover:underline"
-              >
+              <Link href="/services" onClick={(e) => handleNavClick(e, '/services')} className="hover:underline">
                 Services
               </Link>
 
-              <Link
-                href="/about"
-                onClick={(e) => handleNavClick(e, '/about')}
-                className="hover:underline"
-              >
+              <Link href="/about" onClick={(e) => handleNavClick(e, '/about')} className="hover:underline">
                 About Us
               </Link>
 
-              <Link
-                href="/contact"
-                onClick={(e) => handleNavClick(e, '/contact')}
-                className="hover:underline"
-              >
+              <Link href="/contact" onClick={(e) => handleNavClick(e, '/contact')} className="hover:underline">
                 Contact Us
               </Link>
 
-              {/* Consultant / Agent Details */}
+              {/* NEW protected item */}
               <button
                 type="button"
-                onClick={openConsultantModal}
+                onClick={openProtectedModal}
                 className="hover:underline text-sm"
               >
                 Consultant / Agent Details
@@ -328,7 +363,7 @@ export default function Navbar({ theme, toggleTheme }) {
               </button>
             </div>
 
-            {/* mobile */}
+            {/* Mobile */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={toggleTheme}
@@ -339,8 +374,6 @@ export default function Navbar({ theme, toggleTheme }) {
 
               <button
                 onClick={() => setOpen((v) => !v)}
-                aria-expanded={open}
-                aria-label="Toggle menu"
                 className="p-2 rounded-md border dark:border-gray-700"
               >
                 ☰
@@ -349,44 +382,29 @@ export default function Navbar({ theme, toggleTheme }) {
           </div>
         </div>
 
-        {/* mobile menu */}
+        {/* Mobile Menu */}
         {open && (
           <div className="md:hidden px-4 pb-4 space-y-2">
-            <Link
-              href="/"
-              onClick={(e) => handleNavClick(e, '/')}
-              className="block"
-            >
+
+            <Link href="/" onClick={(e) => handleNavClick(e, '/')} className="block">
               Home
             </Link>
 
-            <Link
-              href="/services"
-              onClick={(e) => handleNavClick(e, '/services')}
-              className="block"
-            >
+            <Link href="/services" onClick={(e) => handleNavClick(e, '/services')} className="block">
               Services
             </Link>
 
-            <Link
-              href="/about"
-              onClick={(e) => handleNavClick(e, '/about')}
-              className="block"
-            >
+            <Link href="/about" onClick={(e) => handleNavClick(e, '/about')} className="block">
               About Us
             </Link>
 
-            <Link
-              href="/contact"
-              onClick={(e) => handleNavClick(e, '/contact')}
-              className="block"
-            >
+            <Link href="/contact" onClick={(e) => handleNavClick(e, '/contact')} className="block">
               Contact Us
             </Link>
 
             <button
               type="button"
-              onClick={openConsultantModal}
+              onClick={openProtectedModal}
               className="block w-full text-left"
             >
               Consultant / Agent Details
@@ -399,11 +417,19 @@ export default function Navbar({ theme, toggleTheme }) {
             >
               Get Consultation
             </Link>
+
           </div>
         )}
       </nav>
 
-      {/* Modal */}
+      {/* PASSWORD MODAL */}
+      <PasswordModal
+        open={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSuccess={() => setShowConsultantModal(true)}
+      />
+
+      {/* MAIN CONSULTANT MODAL */}
       <ConsultantModal
         open={showConsultantModal}
         onClose={() => setShowConsultantModal(false)}
