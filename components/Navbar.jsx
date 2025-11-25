@@ -107,6 +107,9 @@ function ConsultantModal({ open, onClose }) {
     email: '',
   })
 
+  const [status, setStatus] = useState(null) // null | sending | success | error
+  const [serverMessage, setServerMessage] = useState("")
+
   if (!open) return null
 
   function handleChange(e) {
@@ -114,20 +117,55 @@ function ConsultantModal({ open, onClose }) {
     setForm((f) => ({ ...f, [name]: value }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
+    setStatus("sending")
+    setServerMessage("")
 
-    const selectedCountry = PHONE_COUNTRIES.find(
-      (c) => c.code === form.phoneCountryCode
-    )
+    try {
+      const fd = new FormData()
 
-    console.log("Consultant / Agent Details:", {
-      ...form,
-      fullPhone: `${form.phoneCountryCode} ${form.phone}`,
-      countryLabel: selectedCountry?.label,
-    })
+      // Add fields in a readable format for email
+      fd.append("FormSource", "Consultant Registration")
+      fd.append("ConsultantName", form.name)
+      fd.append("Organization", form.organization)
+      fd.append("City", form.city)
+      fd.append("District", form.district)
+      fd.append("State", form.state)
+      fd.append("Country", form.country)
+      fd.append("Phone", `${form.phoneCountryCode} ${form.phone}`)
+      fd.append("Email", form.email)
 
-    onClose()
+      const res = await fetch("/api/send-consultation-netlify", {
+        method: "POST",
+        body: fd,
+      })
+
+      const payload = await res.json()
+      if (!res.ok) throw new Error(payload.error || "Email failed")
+
+      setStatus("success")
+      setServerMessage("Registration is pending. We will contact you soon.")
+
+      // reset form
+      setForm({
+        name: '',
+        organization: '',
+        city: '',
+        district: '',
+        state: '',
+        country: '',
+        phoneCountryCode: '+971',
+        phone: '',
+        email: '',
+      })
+
+      return
+    } catch (err) {
+      console.error("consultant modal submit error", err)
+      setStatus("error")
+      setServerMessage("Something went wrong. Please try again.")
+    }
   }
 
   return (
@@ -141,73 +179,49 @@ function ConsultantModal({ open, onClose }) {
         <h2 className="text-xl font-semibold mb-2">Consultant / Agent Details</h2>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          {/* FORM FIELDS SAME AS BEFORE */}
 
           <div>
             <label className="block text-sm font-medium mb-1">Name (Consultant)</label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
-              required
-            />
+            <input name="name" value={form.name} onChange={handleChange}
+              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700" required />
           </div>
 
           <div>
             <label className="block text-sm font-medium mb-1">Organization</label>
-            <input
-              name="organization"
-              value={form.organization}
-              onChange={handleChange}
-              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
-            />
+            <input name="organization" value={form.organization} onChange={handleChange}
+              className="w-full p-2 border rounded border-gray-300 dark:border-gray-700" />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1">City / Village</label>
-              <input
-                name="city"
-                value={form.city}
-                onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
-              />
+              <input name="city" value={form.city} onChange={handleChange}
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700" />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">District</label>
-              <input
-                name="district"
-                value={form.district}
-                onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
-              />
+              <input name="district" value={form.district} onChange={handleChange}
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1">State</label>
-              <input
-                name="state"
-                value={form.state}
-                onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
-              />
+              <input name="state" value={form.state} onChange={handleChange}
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700" />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">Country</label>
-              <input
-                name="country"
-                value={form.country}
-                onChange={handleChange}
-                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700"
-              />
+              <input name="country" value={form.country} onChange={handleChange}
+                className="w-full p-2 border rounded border-gray-300 dark:border-gray-700" />
             </div>
           </div>
 
-          {/* Phone with flag + country code */}
+          {/* Phone with flag */}
           <div>
             <label className="block text-sm font-medium mb-1">Contact Phone No</label>
             <div className="flex items-center gap-2">
@@ -245,20 +259,34 @@ function ConsultantModal({ open, onClose }) {
             />
           </div>
 
+          {/* STATUS MESSAGE */}
+          {status === "success" && (
+            <p className="text-sm text-green-700 bg-green-50 px-3 py-2 rounded">
+              {serverMessage}
+            </p>
+          )}
+
+          {status === "error" && (
+            <p className="text-sm text-red-700 bg-red-50 px-3 py-2 rounded">
+              {serverMessage}
+            </p>
+          )}
+
           <div className="flex justify-end gap-3 mt-4">
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
             >
-              Cancel
+              Close
             </button>
 
             <button
               type="submit"
-              className="px-4 py-2 bg-brand-500 text-white rounded-md text-sm shadow hover:opacity-90"
+              disabled={status === "sending"}
+              className="px-4 py-2 bg-brand-500 text-white rounded-md text-sm shadow hover:opacity-90 disabled:opacity-50"
             >
-              Submit
+              {status === "sending" ? "Sending..." : "Submit"}
             </button>
           </div>
         </form>
@@ -266,6 +294,7 @@ function ConsultantModal({ open, onClose }) {
     </div>
   )
 }
+
 
 /* -----------------------------------------------------------
    NAVBAR MAIN COMPONENT

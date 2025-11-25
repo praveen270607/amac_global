@@ -171,6 +171,54 @@ const SERVICES = [
     ],
     closing:
       'From GCC to Southeast Asia and beyond, we combine cultural intelligence, digital agility and end-to-end support to make your global expansion a success.'
+  },
+
+  // 🔹 NEW SERVICE: Real Estate & Commercial Brokerage
+  {
+    emoji: '🏢',
+    title: 'Real Estate & Commercial Brokerage Services',
+    subtitle: 'Real Estate & Commercial Brokerage',
+    keywords:
+      'Property acquisition and sales, leasing, investment advisory, valuation, commercial project brokerage, property management, international real estate transactions.',
+    intro:
+      'AMAC Global Management Consultancy provides end-to-end solutions in real estate and commercial brokerage, empowering investors, businesses and property owners with strategic opportunities and reliable guidance across multiple sectors.',
+    bullets: [
+      'Property acquisition and sales of prime residential and commercial assets.',
+      'Leasing and rental solutions for office, retail and industrial spaces with favourable terms.',
+      'Investment advisory for profitable opportunities and portfolio diversification.',
+      'Market research and valuation delivering accurate property values and in-depth analysis.',
+      'Commercial project brokerage connecting developers and businesses with suitable projects.',
+      'Tenant and landlord representation, negotiating agreements that protect client interests.',
+      'Property management services covering operations, maintenance and tenant relations.',
+      'Strategic advisory for developers, feasibility studies and project positioning.',
+      'International real estate transactions with full compliance and due diligence support.'
+    ],
+    closing:
+      'With AMAC, you gain a trusted partner committed to unlocking value, minimising risk and driving sustainable growth in the evolving real estate market.'
+  },
+
+  // 🔹 NEW SERVICE: Travels & Tourism
+  {
+    emoji: '✈️',
+    title: 'Travels & Tourism Services',
+    subtitle: 'Travel & Tourism Solutions',
+    keywords:
+      'Corporate travel management, holiday packages, destination management, visa assistance, luxury travel, international tourism services.',
+    intro:
+      'AMAC Global Management Consultancy delivers exceptional travel and tourism solutions for individuals, families and corporate clients. We combine global reach with personalised planning to make every journey seamless, enriching and stress-free.',
+    bullets: [
+      'Corporate travel management for business trips, conferences and executive travel.',
+      'Leisure and holiday packages with customised itineraries for families, couples and adventure trips.',
+      'Destination management for events, group tours and cultural experiences.',
+      'Flight and hotel reservations with efficient booking and competitive rates.',
+      'Visa and travel documentation assistance for hassle-free compliance.',
+      'Luxury travel experiences including premium stays, cruises and private tours.',
+      'Tour guide services and local expertise for authentic destination insights.',
+      'Transportation and transfers including airport pickups, car rentals and local travel.',
+      'International tourism services with cross-border planning, global partnerships and local expertise.'
+    ],
+    closing:
+      'With AMAC, you gain a trusted partner dedicated to delivering unforgettable journeys, simplifying logistics and creating experiences that inspire and connect in the dynamic world of tourism.'
   }
 ]
 
@@ -181,7 +229,7 @@ export default function Services() {
         <h1 className="text-3xl font-bold">Our Services</h1>
         <p className="mt-2 text-gray-600 dark:text-gray-300">
           AMAC Global provides integrated solutions across international manpower, education, business setup,
-          HR, technology, design, training, tax, branding and global expansion.
+          HR, technology, design, training, tax, branding, real estate, travel and global expansion.
         </p>
       </header>
 

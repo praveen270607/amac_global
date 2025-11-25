@@ -96,10 +96,19 @@ export default async function handler(req, res) {
     })
 
     // envelope and message
+    const subjectName =
+      fields.firstName ||
+      fields.fullName ||
+      fields.FullName ||
+      fields.name ||
+      'Contact form'
+      
+    const isContact = fields.formType === 'contact'
+      
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.SMTP_OAUTH_USER,
       to: process.env.EMAIL_TO || process.env.SMTP_OAUTH_USER,
-      subject: `New consultation — ${fields.firstName || fields.FullName || 'Contact form'}`,
+      subject: `${isContact ? 'New contact message' : 'New consultation'} — ${subjectName}`,
       text: summary,
       html: `<pre style="white-space:pre-wrap;">${summary}</pre>`,
       attachments,
