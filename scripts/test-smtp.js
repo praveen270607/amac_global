@@ -1,3 +1,4 @@
+require('dotenv').config({ path: '.env.local' })
 // scripts/test-smtp.js
 const nodemailer = require('nodemailer')
 const { google } = require('googleapis')
