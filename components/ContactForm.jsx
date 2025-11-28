@@ -3,11 +3,17 @@ import { useState } from 'react'
 
 const COUNTRY_CODES = [
   { code: '+971', label: '🇦🇪 +971 (UAE)' },
-  { code: '+44', label: '🇬🇧 +44 (UK)' },
-  { code: '+91', label: '🇮🇳 +91 (India)' },
-  { code: '+1',  label: '🇺🇸 +1 (USA/Canada)' },
-  { code: '+61', label: '🇦🇺 +61 (Australia)' },
-  { code: '+65', label: '🇸🇬 +65 (Singapore)' },
+  { code: '+44',  label: '🇬🇧 +44 (UK)' },
+  { code: '+91',  label: '🇮🇳 +91 (India)' },
+  { code: '+1',   label: '🇺🇸 +1 (USA/Canada)' },
+  { code: '+61',  label: '🇦🇺 +61 (Australia)' },
+  { code: '+65',  label: '🇸🇬 +65 (Singapore)' },
+
+  // Newly added
+  { code: '+975', label: '🇧🇹 +975 (Bhutan)' },
+  { code: '+880', label: '🇧🇩 +880 (Bangladesh)' },
+  { code: '+977', label: '🇳🇵 +977 (Nepal)' },
+  { code: '+94',  label: '🇱🇰 +94 (Sri Lanka)' },
 ]
 
 export default function ContactForm() {
@@ -165,6 +171,9 @@ export default function ContactForm() {
         <option>Educational Training & Skill Development</option>
         <option>Tax Consultancy & Corporate Identity Design</option>
         <option>Cross-Border Business Expansion Services</option>
+        <option>Branding & Corporate Identity Design</option>
+        <option>Real Estate & Commercial Brokerage Services</option>
+        <option>Travels & Tourism Services</option>
       </select>
 
       {/* Message */}

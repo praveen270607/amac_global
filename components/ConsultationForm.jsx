@@ -3,6 +3,7 @@ import { useState } from 'react'
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB
 
+// Main form country codes (no flags – as before)
 const COUNTRY_CODES = [
   { code: '+971', label: 'UAE (+971)' },
   { code: '+91', label: 'India (+91)' },
@@ -25,7 +26,43 @@ const COUNTRY_CODES = [
   { code: '+81', label: 'Japan (+81)' },
   { code: '+82', label: 'South Korea (+82)' },
   { code: '+86', label: 'China (+86)' },
+
+  // Newly Added
+  { code: '+975', label: 'Bhutan (+975)' },
+  { code: '+880', label: 'Bangladesh (+880)' },
+  { code: '+977', label: 'Nepal (+977)' },
+  { code: '+94',  label: 'Sri Lanka (+94)' },
 ]
+
+// Registration modal: country codes WITH emoji flags
+// (You can add more countries as needed)
+const REG_COUNTRY_CODES = [
+  { code: '+971', flag: '🇦🇪', label: 'United Arab Emirates' },
+  { code: '+91', flag: '🇮🇳', label: 'India' },
+  { code: '+966', flag: '🇸🇦', label: 'Saudi Arabia' },
+  { code: '+968', flag: '🇴🇲', label: 'Oman' },
+  { code: '+974', flag: '🇶🇦', label: 'Qatar' },
+  { code: '+973', flag: '🇧🇭', label: 'Bahrain' },
+  { code: '+965', flag: '🇰🇼', label: 'Kuwait' },
+  { code: '+1', flag: '🇺🇸', label: 'United States' },
+  { code: '+1', flag: '🇨🇦', label: 'Canada' },
+  { code: '+44', flag: '🇬🇧', label: 'United Kingdom' },
+  { code: '+61', flag: '🇦🇺', label: 'Australia' },
+  { code: '+65', flag: '🇸🇬', label: 'Singapore' },
+  { code: '+49', flag: '🇩🇪', label: 'Germany' },
+  { code: '+33', flag: '🇫🇷', label: 'France' },
+  { code: '+34', flag: '🇪🇸', label: 'Spain' },
+  { code: '+39', flag: '🇮🇹', label: 'Italy' },
+
+  // Newly Added
+  { code: '+975', flag: '🇧🇹', label: 'Bhutan' },
+  { code: '+880', flag: '🇧🇩', label: 'Bangladesh' },
+  { code: '+977', flag: '🇳🇵', label: 'Nepal' },
+  { code: '+94',  flag: '🇱🇰', label: 'Sri Lanka' },
+]
+
+// Password for the registration flow (change when needed)
+const REGISTRATION_PASSWORD = 'AMAC2025'
 
 function prettyBytes(bytes) {
   if (!bytes) return '0 B'
@@ -94,6 +131,7 @@ function FilePicker({ label, name, file, onChange, accept }) {
 }
 
 export default function ConsultationForm() {
+  // ========= main consultation form state =========
   const [values, setValues] = useState({
     firstName: '',
     lastName: '',
@@ -122,6 +160,22 @@ export default function ConsultationForm() {
   const [submitStatus, setSubmitStatus] = useState(null)
   const [serverMessage, setServerMessage] = useState('')
 
+  // ========= registration flow state =========
+  const [showPasswordModal, setShowPasswordModal] = useState(false)
+  const [passwordInput, setPasswordInput] = useState('')
+  const [passwordError, setPasswordError] = useState('')
+
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [registerValues, setRegisterValues] = useState({
+    regCountryCode: '+971',
+    regPhone: '',
+    regEmail: '',
+  })
+  const [regErrors, setRegErrors] = useState({})
+  const [regStatus, setRegStatus] = useState(null)
+  const [regMessage, setRegMessage] = useState('')
+
+  // ========= main form handlers =========
   function handleChange(e) {
     const { name, value } = e.target
     setValues((v) => ({ ...v, [name]: value }))
@@ -257,330 +311,603 @@ export default function ConsultationForm() {
     }
   }
 
+  // ========= registration flow handlers =========
+
+  function openRegistrationPasswordModal() {
+    setPasswordInput('')
+    setPasswordError('')
+    setRegStatus(null)
+    setRegMessage('')
+    setShowPasswordModal(true)
+  }
+
+  function handlePasswordSubmit(e) {
+    e.preventDefault()
+    if (passwordInput === REGISTRATION_PASSWORD) {
+      setPasswordError('')
+      setShowPasswordModal(false)
+      setShowRegisterModal(true)
+    } else {
+      setPasswordError('Incorrect password. Please try again.')
+    }
+  }
+
+  function handleRegisterChange(e) {
+    const { name, value } = e.target
+    setRegisterValues((v) => ({ ...v, [name]: value }))
+    setRegErrors((prev) => ({ ...prev, [name]: null }))
+  }
+
+  function validateRegister() {
+    const errs = {}
+    if (!registerValues.regPhone.trim()) {
+      errs.regPhone = 'Phone number is required'
+    } else if (!/^\d{6,}$/.test(registerValues.regPhone.replace(/\s+/g, ''))) {
+      errs.regPhone = 'Enter a valid phone number'
+    }
+
+    if (!registerValues.regEmail.trim()) {
+      errs.regEmail = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(registerValues.regEmail)) {
+      errs.regEmail = 'Enter a valid email'
+    }
+
+    setRegErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
+  async function handleRegisterSubmit(e) {
+    e.preventDefault()
+    setRegStatus(null)
+    setRegMessage('')
+
+    if (!validateRegister()) {
+      setRegStatus('error')
+      return
+    }
+
+    const fd = new FormData()
+    fd.append('formType', 'registration')
+    fd.append('regCountryCode', registerValues.regCountryCode)
+    fd.append('regPhone', registerValues.regPhone)
+    fd.append('regEmail', registerValues.regEmail)
+
+    try {
+      setRegStatus('sending')
+      const res = await fetch('/api/send-consultation-netlify', {
+        method: 'POST',
+        body: fd,
+      })
+
+      let payload = null
+      const ct = res.headers.get('content-type') || ''
+      if (ct.includes('application/json')) {
+        payload = await res.json()
+      } else {
+        payload = { message: await res.text() }
+      }
+
+      if (!res.ok) {
+        const errMsg =
+          (payload && (payload.error || payload.message)) ||
+          (typeof payload === 'string' && payload) ||
+          JSON.stringify(payload)
+        setRegMessage(String(errMsg))
+        setRegStatus('error')
+        return
+      }
+
+      setRegStatus('success')
+      setRegMessage('Registration is pending. We will come back to you.')
+
+      // clear fields
+      setRegisterValues({
+        regCountryCode: registerValues.regCountryCode || '+971',
+        regPhone: '',
+        regEmail: '',
+      })
+    } catch (err) {
+      console.error('registration submit error', err)
+      setRegMessage(String(err.message || 'Network error'))
+      setRegStatus('error')
+    }
+  }
+
+  function closeRegisterModal() {
+    setShowRegisterModal(false)
+    setRegStatus(null)
+    setRegMessage('')
+    setRegErrors({})
+  }
+
+  // ========= JSX =========
   return (
-    <form
-      id="consultForm"
-      onSubmit={handleSubmit}
-      /* increased max width so form background is wider and fits the phone field */
-      className="max-w-5xl lg:max-w-6xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow"
-      encType="multipart/form-data"
-    >
-      {/* first row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="md:col-span-1">
-          <label className="block text-sm font-medium mb-1">First Name*</label>
-          <input
-            name="firstName"
-            value={values.firstName}
-            onChange={handleChange}
-            className={`w-full p-2 border rounded ${
-              errors.firstName
-                ? 'border-red-500'
-                : 'border-gray-200 dark:border-gray-700'
-            } bg-white dark:bg-gray-900`}
-            aria-invalid={!!errors.firstName}
-            aria-describedby={errors.firstName ? 'err-firstName' : undefined}
-          />
-          {errors.firstName && (
-            <p id="err-firstName" className="text-xs text-red-600 mt-1">
-              {errors.firstName}
-            </p>
-          )}
-        </div>
-
-        <div className="md:col-span-1">
-          <label className="block text-sm font-medium mb-1">
-            Surname / Last Name*
-          </label>
-          <input
-            name="lastName"
-            value={values.lastName}
-            onChange={handleChange}
-            className={`w-full p-2 border rounded ${
-              errors.lastName
-                ? 'border-red-500'
-                : 'border-gray-200 dark:border-gray-700'
-            } bg-white dark:bg-gray-900`}
-            aria-invalid={!!errors.lastName}
-            aria-describedby={errors.lastName ? 'err-lastName' : undefined}
-          />
-          {errors.lastName && (
-            <p id="err-lastName" className="text-xs text-red-600 mt-1">
-              {errors.lastName}
-            </p>
-          )}
-        </div>
-
-        {/* phone with country code - fixed width for select so code is visible */}
-        <div className="md:col-span-1">
-          <label className="block text-sm font-medium mb-1">Phone Number*</label>
-
-          <div className="flex gap-2 items-center">
-            <select
-              name="countryCode"
-              value={values.countryCode}
-              onChange={handleChange}
-              className={`p-2 border rounded text-sm text-center w-20 shrink-0 ${
-                errors.countryCode
-                  ? 'border-red-500'
-                  : 'border-gray-200 dark:border-gray-700'
-              } bg-white dark:bg-gray-900`}
-              aria-invalid={!!errors.countryCode}
-              aria-describedby={
-                errors.countryCode ? 'err-countryCode' : undefined
-              }
-              title={COUNTRY_CODES.find((c) => c.code === values.countryCode)?.label || ''}
-            >
-              {COUNTRY_CODES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code}
-                </option>
-              ))}
-            </select>
-
+    <>
+      <form
+        id="consultForm"
+        onSubmit={handleSubmit}
+        className="max-w-5xl lg:max-w-6xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-lg shadow"
+        encType="multipart/form-data"
+      >
+        {/* first row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="md:col-span-1">
+            <label className="block text-sm font-medium mb-1">First Name*</label>
             <input
-              name="phone"
-              value={values.phone}
+              name="firstName"
+              value={values.firstName}
               onChange={handleChange}
-              placeholder="50 123 4567"
-              className={`flex-1 p-2 border rounded ${
-                errors.phone
+              className={`w-full p-2 border rounded ${
+                errors.firstName
                   ? 'border-red-500'
                   : 'border-gray-200 dark:border-gray-700'
               } bg-white dark:bg-gray-900`}
-              aria-invalid={!!errors.phone}
-              aria-describedby={errors.phone ? 'err-phone' : undefined}
+              aria-invalid={!!errors.firstName}
+              aria-describedby={errors.firstName ? 'err-firstName' : undefined}
+            />
+            {errors.firstName && (
+              <p id="err-firstName" className="text-xs text-red-600 mt-1">
+                {errors.firstName}
+              </p>
+            )}
+          </div>
+
+          <div className="md:col-span-1">
+            <label className="block text-sm font-medium mb-1">
+              Surname / Last Name*
+            </label>
+            <input
+              name="lastName"
+              value={values.lastName}
+              onChange={handleChange}
+              className={`w-full p-2 border rounded ${
+                errors.lastName
+                  ? 'border-red-500'
+                  : 'border-gray-200 dark:border-gray-700'
+              } bg-white dark:bg-gray-900`}
+              aria-invalid={!!errors.lastName}
+              aria-describedby={errors.lastName ? 'err-lastName' : undefined}
+            />
+            {errors.lastName && (
+              <p id="err-lastName" className="text-xs text-red-600 mt-1">
+                {errors.lastName}
+              </p>
+            )}
+          </div>
+
+          {/* phone with country code - fixed width for select so code is visible */}
+          <div className="md:col-span-1">
+            <label className="block text-sm font-medium mb-1">Phone Number*</label>
+
+            <div className="flex gap-2 items-center">
+              <select
+                name="countryCode"
+                value={values.countryCode}
+                onChange={handleChange}
+                className={`p-2 border rounded text-sm text-center w-20 shrink-0 ${
+                  errors.countryCode
+                    ? 'border-red-500'
+                    : 'border-gray-200 dark:border-gray-700'
+                } bg-white dark:bg-gray-900`}
+                aria-invalid={!!errors.countryCode}
+                aria-describedby={
+                  errors.countryCode ? 'err-countryCode' : undefined
+                }
+                title={
+                  COUNTRY_CODES.find((c) => c.code === values.countryCode)
+                    ?.label || ''
+                }
+              >
+                {COUNTRY_CODES.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.code}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                name="phone"
+                value={values.phone}
+                onChange={handleChange}
+                placeholder="50 123 4567"
+                className={`flex-1 p-2 border rounded ${
+                  errors.phone
+                    ? 'border-red-500'
+                    : 'border-gray-200 dark:border-gray-700'
+                } bg-white dark:bg-gray-900`}
+                aria-invalid={!!errors.phone}
+                aria-describedby={errors.phone ? 'err-phone' : undefined}
+              />
+            </div>
+
+            {errors.countryCode && (
+              <p id="err-countryCode" className="text-xs text-red-600 mt-1">
+                {errors.countryCode}
+              </p>
+            )}
+            {errors.phone && (
+              <p id="err-phone" className="text-xs text-red-600 mt-1">
+                {errors.phone}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* email + street */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Email Address*
+            </label>
+            <input
+              name="email"
+              value={values.email}
+              onChange={handleChange}
+              placeholder="your.email@example.com"
+              className={`w-full p-2 border rounded ${
+                errors.email
+                  ? 'border-red-500'
+                  : 'border-gray-200 dark:border-gray-700'
+              } bg-white dark:bg-gray-900`}
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'err-email' : undefined}
+            />
+            {errors.email && (
+              <p id="err-email" className="text-xs text-red-600 mt-1">
+                {errors.email}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Street Address
+            </label>
+            <input
+              name="street"
+              value={values.street}
+              onChange={handleChange}
+              className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
             />
           </div>
-
-          {errors.countryCode && (
-            <p id="err-countryCode" className="text-xs text-red-600 mt-1">
-              {errors.countryCode}
-            </p>
-          )}
-          {errors.phone && (
-            <p id="err-phone" className="text-xs text-red-600 mt-1">
-              {errors.phone}
-            </p>
-          )}
         </div>
-      </div>
 
-      {/* email + street */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Email Address*
-          </label>
+        {/* area / city / state */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
           <input
-            name="email"
-            value={values.email}
+            name="area"
+            value={values.area}
             onChange={handleChange}
-            placeholder="your.email@example.com"
-            className={`w-full p-2 border rounded ${
-              errors.email
-                ? 'border-red-500'
-                : 'border-gray-200 dark:border-gray-700'
-            } bg-white dark:bg-gray-900`}
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? 'err-email' : undefined}
+            placeholder="Area"
+            className="p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
           />
-          {errors.email && (
-            <p id="err-email" className="text-xs text-red-600 mt-1">
-              {errors.email}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Street Address
-          </label>
           <input
-            name="street"
-            value={values.street}
+            name="city"
+            value={values.city}
             onChange={handleChange}
-            className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+            placeholder="City"
+            className="p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+          />
+          <input
+            name="state"
+            value={values.state}
+            onChange={handleChange}
+            placeholder="State / Country"
+            className="p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
           />
         </div>
-      </div>
 
-      {/* area / city / state */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-        <input
-          name="area"
-          value={values.area}
-          onChange={handleChange}
-          placeholder="Area"
-          className="p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-        />
-        <input
-          name="city"
-          value={values.city}
-          onChange={handleChange}
-          placeholder="City"
-          className="p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-        />
-        <input
-          name="state"
-          value={values.state}
-          onChange={handleChange}
-          placeholder="State / Country"
-          className="p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
-        />
-      </div>
-
-      {/* purpose of submission */}
-      <div className="mt-4">
-        <label className="block text-sm font-medium mb-1">
-          Purpose of Submission
-        </label>
-        <textarea
-          name="purpose"
-          value={values.purpose}
-          onChange={handleChange}
-          rows={3}
-          placeholder="Briefly describe the purpose of this submission..."
-          className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
-        />
-      </div>
-
-      {/* contact within 48 hours / 15 days */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
-        <div>
+        {/* purpose of submission */}
+        <div className="mt-4">
           <label className="block text-sm font-medium mb-1">
-            Contact me within 48 hours (preferred date & time)
+            Purpose of Submission
           </label>
-          <input
-            type="datetime-local"
-            name="contactWithin48"
-            value={values.contactWithin48}
+          <textarea
+            name="purpose"
+            value={values.purpose}
             onChange={handleChange}
+            rows={3}
+            placeholder="Briefly describe the purpose of this submission..."
             className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Contact me within 15 days (preferred date & time)
-          </label>
-          <input
-            type="datetime-local"
-            name="contactWithin15"
-            value={values.contactWithin15}
-            onChange={handleChange}
-            className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
-          />
-        </div>
-      </div>
 
-      {/* files */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <div>
-          <FilePicker
-            label="Passport Copy"
-            name="passport"
-            file={files.passport}
-            accept=".pdf,image/*"
-            onChange={(f) => handleFileChange('passport', f)}
-          />
-          {errors.passport && (
-            <p className="text-xs text-red-600 mt-1">{errors.passport}</p>
-          )}
-        </div>
-
-        <div>
-          <FilePicker
-            label="Photo"
-            name="photo"
-            file={files.photo}
-            accept="image/*"
-            onChange={(f) => handleFileChange('photo', f)}
-          />
-          {errors.photo && (
-            <p className="text-xs text-red-600 mt-1">{errors.photo}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-        <div>
-          <FilePicker
-            label="ID Proof"
-            name="idProof"
-            file={files.idProof}
-            accept=".pdf,image/*"
-            onChange={(f) => handleFileChange('idProof', f)}
-          />
-          {errors.idProof && (
-            <p className="text-xs text-red-600 mt-1">{errors.idProof}</p>
-          )}
+        {/* contact within 48 hours / 15 days */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Contact me within 48 hours (preferred date & time)
+            </label>
+            <input
+              type="datetime-local"
+              name="contactWithin48"
+              value={values.contactWithin48}
+              onChange={handleChange}
+              className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Contact me within 15 days (preferred date & time)
+            </label>
+            <input
+              type="datetime-local"
+              name="contactWithin15"
+              value={values.contactWithin15}
+              onChange={handleChange}
+              className="w-full p-2 border rounded border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+            />
+          </div>
         </div>
 
-        <div>
-          <FilePicker
-            label="CV"
-            name="cv"
-            file={files.cv}
-            accept=".pdf,.doc,.docx"
-            onChange={(f) => handleFileChange('cv', f)}
-          />
-          {errors.cv && (
-            <p className="text-xs text-red-600 mt-1">{errors.cv}</p>
-          )}
-        </div>
-      </div>
+        {/* files */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div>
+            <FilePicker
+              label="Passport Copy"
+              name="passport"
+              file={files.passport}
+              accept=".pdf,image/*"
+              onChange={(f) => handleFileChange('passport', f)}
+            />
+            {errors.passport && (
+              <p className="text-xs text-red-600 mt-1">{errors.passport}</p>
+            )}
+          </div>
 
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <FilePicker
-            label="Other Documents"
-            name="other"
-            file={files.other}
-            accept=".pdf,image/*,.doc,.docx"
-            onChange={(f) => handleFileChange('other', f)}
-          />
-          {errors.other && (
-            <p className="text-xs text-red-600 mt-1">{errors.other}</p>
-          )}
+          <div>
+            <FilePicker
+              label="Photo"
+              name="photo"
+              file={files.photo}
+              accept="image/*"
+              onChange={(f) => handleFileChange('photo', f)}
+            />
+            {errors.photo && (
+              <p className="text-xs text-red-600 mt-1">{errors.photo}</p>
+            )}
+          </div>
         </div>
 
-        <div>
-          <FilePicker
-            label="Self Declaration"
-            name="selfDeclaration"
-            file={files.selfDeclaration}
-            accept=".pdf,image/*,.doc,.docx"
-            onChange={(f) => handleFileChange('selfDeclaration', f)}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <div>
+            <FilePicker
+              label="ID Proof"
+              name="idProof"
+              file={files.idProof}
+              accept=".pdf,image/*"
+              onChange={(f) => handleFileChange('idProof', f)}
+            />
+            {errors.idProof && (
+              <p className="text-xs text-red-600 mt-1">{errors.idProof}</p>
+            )}
+          </div>
+
+          <div>
+            <FilePicker
+              label="CV"
+              name="cv"
+              file={files.cv}
+              accept=".pdf,.doc,.docx"
+              onChange={(f) => handleFileChange('cv', f)}
+            />
+            {errors.cv && (
+              <p className="text-xs text-red-600 mt-1">{errors.cv}</p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <FilePicker
+              label="Other Documents"
+              name="other"
+              file={files.other}
+              accept=".pdf,image/*,.doc,.docx"
+              onChange={(f) => handleFileChange('other', f)}
+            />
+            {errors.other && (
+              <p className="text-xs text-red-600 mt-1">{errors.other}</p>
+            )}
+          </div>
+
+          <div>
+            <FilePicker
+              label="Self Declaration"
+              name="selfDeclaration"
+              file={files.selfDeclaration}
+              accept=".pdf,image/*,.doc,.docx"
+              onChange={(f) => handleFileChange('selfDeclaration', f)}
+            />
+            {errors.selfDeclaration && (
+              <p className="text-xs text-red-600 mt-1">
+                {errors.selfDeclaration}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* bottom actions: submit + get registered */}
+        <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button
+              type="submit"
+              disabled={submitStatus === 'sending'}
+              className="px-4 py-2 bg-brand-500 text-white rounded-md shadow hover:scale-105 transition-transform disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {submitStatus === 'sending' ? 'Sending...' : 'Submit'}
+            </button>
+
+            {submitStatus === 'success' && (
+              <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 px-3 py-2 rounded">
+                {serverMessage || 'Form submitted and email sent.'}
+              </div>
+            )}
+            {submitStatus === 'error' && (
+              <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded">
+                {serverMessage ||
+                  'Submission failed. Check required fields or try again.'}
+              </div>
+            )}
+          </div>
+
+          {/* Get Registered button (bottom-right) */}
+          <button
+            type="button"
+            onClick={openRegistrationPasswordModal}
+            className="self-end sm:self-auto px-4 py-2 border border-brand-500 text-brand-500 rounded-md hover:bg-brand-500 hover:text-white transition"
+          >
+            Get Registered
+          </button>
+        </div>
+      </form>
+
+      {/* ===== Password Modal ===== */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowPasswordModal(false)}
           />
-          {errors.selfDeclaration && (
-            <p className="text-xs text-red-600 mt-1">
-              {errors.selfDeclaration}
+          <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-sm p-6 mx-4">
+            <h2 className="text-xl font-semibold mb-2">Enter Registration Password</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Please enter the password to proceed with registration.
             </p>
-          )}
+            <form onSubmit={handlePasswordSubmit} className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Password</label>
+                <input
+                  type="password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className="w-full p-2 border rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                  required
+                />
+              </div>
+              {passwordError && (
+                <p className="text-sm text-red-600">{passwordError}</p>
+              )}
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-brand-500 text-white rounded-md text-sm shadow hover:opacity-90"
+                >
+                  Continue
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="mt-6 flex items-center gap-4">
-        <button
-          type="submit"
-          disabled={submitStatus === 'sending'}
-          className="px-4 py-2 bg-brand-500 text-white rounded-md shadow hover:scale-105 transition-transform disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {submitStatus === 'sending' ? 'Sending...' : 'Submit'}
-        </button>
+      {/* ===== Registration Modal ===== */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={closeRegisterModal}
+          />
+          <div className="relative bg-white dark:bg-gray-900 rounded-lg shadow-xl w-full max-w-md p-6 mx-4">
+            <h2 className="text-xl font-semibold mb-3">
+              I am / We are ready to register
+            </h2>
 
-        {submitStatus === 'success' && (
-          <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 px-3 py-2 rounded">
-            {serverMessage || 'Form submitted and email sent.'}
+            <form onSubmit={handleRegisterSubmit} className="space-y-4">
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Phone Number*
+                </label>
+                <div className="flex items-center gap-2">
+                  <select
+                    name="regCountryCode"
+                    value={registerValues.regCountryCode}
+                    onChange={handleRegisterChange}
+                    className="p-2 w-28 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm"
+                  >
+                    {REG_COUNTRY_CODES.map((c) => (
+                      <option key={c.label + c.code} value={c.code}>
+                        {c.flag} {c.code}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    name="regPhone"
+                    value={registerValues.regPhone}
+                    onChange={handleRegisterChange}
+                    placeholder="50 123 4567"
+                    className="flex-1 p-2 border rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                  />
+                </div>
+                {regErrors.regPhone && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {regErrors.regPhone}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Email Address*
+                </label>
+                <input
+                  type="email"
+                  name="regEmail"
+                  value={registerValues.regEmail}
+                  onChange={handleRegisterChange}
+                  placeholder="your.email@example.com"
+                  className="w-full p-2 border rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900"
+                />
+                {regErrors.regEmail && (
+                  <p className="text-xs text-red-600 mt-1">
+                    {regErrors.regEmail}
+                  </p>
+                )}
+              </div>
+
+              {/* Status messages */}
+              {regStatus === 'success' && (
+                <div className="text-sm text-green-600 bg-green-50 dark:bg-green-900/30 px-3 py-2 rounded">
+                  {regMessage ||
+                    'Registration is pending. We will come back to you.'}
+                </div>
+              )}
+              {regStatus === 'error' && (
+                <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded">
+                  {regMessage ||
+                    'Registration failed. Check fields or try again.'}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={closeRegisterModal}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={regStatus === 'sending'}
+                  className="px-4 py-2 bg-brand-500 text-white rounded-md text-sm shadow hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {regStatus === 'sending' ? 'Sending...' : 'Submit for Process'}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
-        {submitStatus === 'error' && (
-          <div className="text-sm text-red-600 bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded">
-            {serverMessage ||
-              'Submission failed. Check required fields or try again.'}
-          </div>
-        )}
-      </div>
-    </form>
+        </div>
+      )}
+    </>
   )
 }

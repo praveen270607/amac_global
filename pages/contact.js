@@ -57,7 +57,7 @@ export default function Contact() {
             </p>
             {/* Replace with real UK contact when available */}
             <p className="flex items-center gap-2">
-              <Phone size={16} /> +44 0000 000000
+              <Phone size={16} /> +44 7440 00727835
             </p>
             <p className="flex items-center gap-2">
               <MapPin size={16} /> 1–3 Brixton Rd, London, UK
@@ -78,7 +78,7 @@ export default function Contact() {
               <Clock size={16} /> Monday – Friday: 9:00 AM – 6:00 PM
             </p>
             <p className="flex items-center gap-2">
-              <Phone size={16} /> +971 50 309 6657
+              <Phone size={16} /> +971 58 996 0663
             </p>
             <p className="flex items-center gap-2">
               <MapPin size={16} /> Al Marsa Street, Dubai Marina, Dubai, UAE
@@ -100,7 +100,7 @@ export default function Contact() {
               <Clock size={16} /> Monday – Friday: 9:30 AM – 6:00 PM
             </p>
             <p className="flex items-center gap-2">
-              <Phone size={16} /> +91 12345 67890
+              <Phone size={16} /> +91 63831 91009
             </p>
             <p className="flex items-center gap-2">
               <MapPin size={16} /> Nungambakkam, Chennai, Tamil Nadu, India
