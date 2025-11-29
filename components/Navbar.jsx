@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 
 // Password for Consultant Access
-const CONSULTANT_PASSWORD = 'AMAC2025' // <<< CHANGE THIS PASSWORD WHEN NEEDED
+const CONSULTANT_PASSWORD = 'Accept@Admin2025' // <<< CHANGE THIS PASSWORD WHEN NEEDED
 
 // Compact list of key countries with flags + codes
 const PHONE_COUNTRIES = [

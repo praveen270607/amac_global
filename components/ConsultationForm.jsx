@@ -62,7 +62,7 @@ const REG_COUNTRY_CODES = [
 ]
 
 // Password for the registration flow (change when needed)
-const REGISTRATION_PASSWORD = 'AMAC2025'
+const REGISTRATION_PASSWORD = 'Admin@Amac2025'
 
 function prettyBytes(bytes) {
   if (!bytes) return '0 B'
