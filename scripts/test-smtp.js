@@ -1,43 +1,19 @@
-require('dotenv').config({ path: '.env.local' })
-// scripts/test-smtp.js
-const nodemailer = require('nodemailer')
-const { google } = require('googleapis')
+import nodemailer from 'nodemailer'
+import 'dotenv/config'
 
-async function run() {
-  const user = process.env.SMTP_OAUTH_USER
-  const clientId = process.env.GOOGLE_CLIENT_ID
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET
-  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN
+const t = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+})
 
-  if (!user || !clientId || !clientSecret || !refreshToken) {
-    console.error('Set SMTP_OAUTH_USER, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN')
-    process.exit(1)
-  }
-
-  const oAuth2Client = new google.auth.OAuth2(clientId, clientSecret)
-  oAuth2Client.setCredentials({ refresh_token: refreshToken })
-  const { token: accessToken } = await oAuth2Client.getAccessToken()
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user,
-      clientId,
-      clientSecret,
-      refreshToken,
-      accessToken,
-    },
-  })
-
-  transporter.verify((err, success) => {
-    if (err) {
-      console.error('transporter.verify error:', err)
-      process.exit(2)
-    } else {
-      console.log('transporter ok — SMTP auth worked')
-    }
-  })
-}
-
-run().catch(e => { console.error(e); process.exit(3) })
+t.sendMail({
+  from: process.env.SMTP_USER,
+  to: process.env.SMTP_USER,
+  subject: 'SMTP Test',
+  text: 'If you got this, SMTP works.',
+})
+.then(console.log)
+.catch(console.error)
