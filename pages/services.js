@@ -219,7 +219,69 @@ const SERVICES = [
     ],
     closing:
       'With AMAC, you gain a trusted partner dedicated to delivering unforgettable journeys, simplifying logistics and creating experiences that inspire and connect in the dynamic world of tourism.'
-  }
+  },
+
+  {
+  emoji: '📊',
+  title: 'Digital Marketing & Social Media Management',
+  subtitle: 'Digital Growth & Online Brand Strategy',
+  keywords:
+    'Digital marketing strategy, social media management, online advertising, brand identity, analytics and reporting.',
+  intro:
+    'At AMAC Global Management Consultancy, we empower brands to achieve measurable digital growth through strategic, data-driven marketing solutions. Our expertise spans across modern digital platforms, enabling businesses to enhance visibility, engagement and long-term value.',
+  bullets: [
+    'Comprehensive digital marketing strategy and campaign planning.',
+    'Social media management across leading platforms.',
+    'Targeted advertising and performance-based marketing.',
+    'Brand identity development and creative content creation.',
+    'Analytics, reporting and continuous campaign optimisation.',
+    'Reputation management and audience engagement strategies.'
+  ],
+  closing:
+    'We ensure every campaign reflects your brand values, reaches the right audience and delivers tangible business outcomes.'
+},
+
+{
+  emoji: '🏗️',
+  title: 'Construction & Civil Engineering Consultancy',
+  subtitle: 'Construction & Infrastructure Advisory',
+  keywords:
+    'Construction consultancy, civil engineering advisory, project planning, quality control, infrastructure development.',
+  intro:
+    'AMAC provides specialised consultancy services for construction, civil engineering and infrastructure development. Guided by industry best practices and technical excellence, we support clients across the complete project lifecycle.',
+  bullets: [
+    'Project planning, evaluation and feasibility assessments.',
+    'Structural and civil engineering advisory services.',
+    'Quality control, site inspections and compliance oversight.',
+    'Material selection guidance and cost-efficient solutions.',
+    'Risk management, safety standards and workflow optimisation.',
+    'Technical documentation, drawings review and engineering support.'
+  ],
+  closing:
+    'We deliver durable, safe and efficient solutions that meet regulatory standards and achieve optimum project performance.'
+},
+
+{
+  emoji: '⚖️',
+  title: 'Legal Advisory & Documentation Services',
+  subtitle: 'Legal Documentation & Compliance Support',
+  keywords:
+    'Legal advisory, document drafting, licensing assistance, compliance guidance, corporate documentation.',
+  intro:
+    'Our Legal Advisory & Documentation Services provide individuals and organisations with precise, reliable and professionally drafted documents tailored to regulatory and institutional requirements across jurisdictions.',
+  bullets: [
+    'Drafting and reviewing legal documents, agreements and corporate contracts.',
+    'Licensing, permits and government documentation assistance.',
+    'Contract preparation, policy drafting and compliance guidance.',
+    'Support for attestations, translations and formal submissions.',
+    'Advisory on procedural standards, regulatory obligations and documentation protocols.',
+    'End-to-end support for business setup and official administrative procedures.'
+  ],
+  closing:
+    'With meticulous attention to detail and strong regulatory understanding, we ensure every document is accurate, compliant and professionally presented.'
+}
+
+
 ]
 
 export default function Services() {
@@ -244,9 +306,6 @@ export default function Services() {
               <div className="min-w-0">
                 <h3 className="text-lg font-semibold leading-tight">{s.title}</h3>
                 <p className="text-sm font-medium text-brand-500 mt-1">{s.subtitle}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold">Keywords:</span> {s.keywords}
-                </p>
               </div>
             </div>
 
