@@ -173,6 +173,9 @@ export default function ContactForm() {
         <option>Cross-Border Business Expansion Services</option>
         <option>Branding & Corporate Identity Design</option>
         <option>Real Estate & Commercial Brokerage Services</option>
+        <option>Digital Marketing & Social Media Management</option>
+        <option>Construction & Civil Engineering Consultancy</option>
+        <option>Legal Advisory & Documentation Services</option>
         <option>Travels & Tourism Services</option>
       </select>
 

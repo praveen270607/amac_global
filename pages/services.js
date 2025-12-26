@@ -280,7 +280,7 @@ const SERVICES = [
   closing:
     'With meticulous attention to detail and strong regulatory understanding, we ensure every document is accurate, compliant and professionally presented.'
 }
-
+  
 
 ]
 
